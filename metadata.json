@@ -1,0 +1,8 @@
+{
+  "name": "Smart Learning & Entrepreneurship Activity Portal",
+  "description": "A comprehensive Wadhwani-inspired entrepreneurship learning platform for students and educators with multi-step activity submissions, real-time draft saving, video & link deliverables, and administrative grading workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    border-color: var(--border, #e2e8f0);
+  }
+  body {
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Wadhwani Portal Design Language:
+   - Green input borders on focus / active
+   - Subtle green highlights & badge pills
+   - Red primary action buttons (high-conversion, standard learning portal CTA)
+*/
+.input-green-focus:focus-within,
+.input-green-focus:focus {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+.btn-primary-red {
+  background-color: #dc2626;
+  color: #ffffff;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary-red:hover {
+  background-color: #b91c1c;
+}
+.btn-primary-red:active {
+  transform: scale(0.98);
+}

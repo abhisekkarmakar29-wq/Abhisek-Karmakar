@@ -1,0 +1,209 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Registered student or administrator user profile in the entrepreneurship portal",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Full legal or preferred name of the user",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the user",
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "enum": ["student", "admin"],
+          "description": "Role determining permissions in the portal"
+        },
+        "registrationDate": {
+          "type": "string",
+          "description": "ISO timestamp of user registration"
+        },
+        "institution": {
+          "type": "string",
+          "description": "University, college, or incubation hub affiliation",
+          "maxLength": 150
+        },
+        "ventureName": {
+          "type": "string",
+          "description": "Name of the student's startup venture",
+          "maxLength": 100
+        }
+      },
+      "required": ["fullName", "email", "role"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Curriculum course or entrepreneurship track",
+      "type": "object",
+      "properties": {
+        "courseName": {
+          "type": "string",
+          "description": "Official name of the course",
+          "maxLength": 150
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description and learning outcomes",
+          "maxLength": 1000
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "archived", "upcoming"],
+          "description": "Lifecycle state of the course"
+        },
+        "code": {
+          "type": "string",
+          "description": "Course code e.g. V101",
+          "maxLength": 20
+        }
+      },
+      "required": ["courseName", "status", "code"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "Entrepreneurship learning activity or assignment",
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "type": "string",
+          "description": "Identifier of parent course",
+          "maxLength": 64
+        },
+        "activityTitle": {
+          "type": "string",
+          "description": "Title of the activity",
+          "maxLength": 200
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Detailed guidelines and instructions for students",
+          "maxLength": 4000
+        },
+        "description": {
+          "type": "string",
+          "description": "Short summary of activity goals",
+          "maxLength": 1000
+        },
+        "displayOrder": {
+          "type": "number",
+          "description": "Display order index in course sequence"
+        }
+      },
+      "required": ["courseId", "activityTitle", "instructions"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Individual question within an activity",
+      "type": "object",
+      "properties": {
+        "activityId": {
+          "type": "string",
+          "description": "Identifier of parent activity",
+          "maxLength": 64
+        },
+        "questionText": {
+          "type": "string",
+          "description": "Question prompt text",
+          "maxLength": 1000
+        },
+        "inputType": {
+          "type": "string",
+          "enum": ["textarea", "text", "video_url", "website_url"],
+          "description": "Expected input mechanism"
+        },
+        "isRequired": {
+          "type": "boolean",
+          "description": "Whether answering this question is required for submission"
+        },
+        "displayOrder": {
+          "type": "number",
+          "description": "Ordering within the activity"
+        }
+      },
+      "required": ["activityId", "questionText", "inputType", "isRequired"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Student activity submission or draft record",
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "type": "string",
+          "description": "UID of the student submitting",
+          "maxLength": 64
+        },
+        "activityId": {
+          "type": "string",
+          "description": "Identifier of the activity",
+          "maxLength": 64
+        },
+        "submissionStatus": {
+          "type": "string",
+          "enum": ["draft", "submitted", "reviewed"],
+          "description": "Status of the student submission"
+        },
+        "submittedDate": {
+          "type": "string",
+          "description": "ISO timestamp of final submission"
+        }
+      },
+      "required": ["studentId", "activityId", "submissionStatus"]
+    },
+    "Answer": {
+      "title": "Answer",
+      "description": "Response to an individual question in a submission",
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "type": "string",
+          "description": "Identifier of parent submission",
+          "maxLength": 64
+        },
+        "questionId": {
+          "type": "string",
+          "description": "Identifier of question answered",
+          "maxLength": 64
+        },
+        "answerTextOrUrl": {
+          "type": "string",
+          "description": "Student provided text response, video link, or website link",
+          "maxLength": 5000
+        }
+      },
+      "required": ["submissionId", "questionId", "answerTextOrUrl"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles including role and institutional affiliation"
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Curriculum courses and modules"
+    },
+    "/activities/{activityId}": {
+      "schema": "Activity",
+      "description": "Activities and assignments belonging to courses"
+    },
+    "/activities/{activityId}/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Questions and inputs for an activity"
+    },
+    "/submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Student assignment submissions and completion status"
+    },
+    "/submissions/{submissionId}/answers/{answerId}": {
+      "schema": "Answer",
+      "description": "Answers submitted by students for specific questions"
+    }
+  }
+}

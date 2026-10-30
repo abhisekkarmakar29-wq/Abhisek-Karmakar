@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email != null && request.auth.token.email.matches('.*admin.*'))
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      allow get: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isOwner(userId) &&
+        incoming().keys().hasAll(['fullName', 'email', 'role']) &&
+        incoming().fullName is string && incoming().fullName.size() <= 100 &&
+        incoming().email is string && incoming().email.size() <= 120 &&
+        incoming().role in ['student', 'admin'];
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (isOwner(userId) && incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'institution', 'ventureName']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // COURSES COLLECTION
+    match /courses/{courseId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ACTIVITIES COLLECTION
+    match /activities/{activityId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      // QUESTIONS SUBCOLLECTION
+      match /questions/{questionId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+      }
+    }
+
+    // SUBMISSIONS COLLECTION
+    match /submissions/{submissionId} {
+      // Students can only read and manage their own submissions; admins can read and review all
+      allow get: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && incoming().studentId == request.auth.uid &&
+        incoming().keys().hasAll(['studentId', 'activityId', 'submissionStatus']) &&
+        incoming().submissionStatus in ['draft', 'submitted'];
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (resource.data.studentId == request.auth.uid &&
+         resource.data.submissionStatus != 'reviewed' &&
+         incoming().studentId == resource.data.studentId)
+      );
+      allow delete: if isAdmin();
+
+      // ANSWERS SUBCOLLECTION
+      match /answers/{answerId} {
+        allow get, list: if isSignedIn() && (
+          get(/databases/$(database)/documents/submissions/$(submissionId)).data.studentId == request.auth.uid || isAdmin()
+        );
+        allow create, update: if isSignedIn() && (
+          get(/databases/$(database)/documents/submissions/$(submissionId)).data.studentId == request.auth.uid || isAdmin()
+        );
+        allow delete: if isAdmin();
+      }
+    }
+  }
+}
